@@ -28,6 +28,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 
+import com.google.android.exoplayer2.util.Log;
 import com.google.zxing.common.detector.MathUtils;
 
 import org.telegram.messenger.AndroidUtilities;
@@ -90,6 +91,7 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
     private int uploadingStoriesCount;
     private StoriesController.UploadingStory lastUploadingStory;
     private final StoriesUtilities.StoryGradientTools gradientTools = new StoriesUtilities.StoryGradientTools(this, false);
+    private RectF centerRect;
 
     public void setProgressToStoriesInsets(float progressToInsets) {
         if (this.progressToInsets == progressToInsets) {
@@ -640,17 +642,44 @@ public class ProfileStoriesView extends View implements NotificationCenter.Notif
                         canvas.scale(bounceScale, bounceScale, rect2.centerX(), rect2.centerY());
                     }
 
+                    if(avatarPullProgress > 0.49 && avatarPullProgress<0.51 && centerRect == null){
+                        centerRect = new RectF(rect3);
+                    }
+                    if(centerRect != null){
+                        if(avatarPullProgress <= 0){
+                            if(readPaint != null) {
+                                readPaint.setAlpha(0);
+                            }
+                            if(unreadPaint != null){
+                                unreadPaint.setAlpha(0);
+                            }
+                        }else{
+                            if(readPaint != null) {
+                                readPaint.setAlpha(1);
+                            }
+                            if(unreadPaint != null) {
+                                unreadPaint.setAlpha(1);
+                            }
+                        }
+                        float scale = (avatarContainer.getScaleX()*avatarContainer.getWidth()/2) *( (1.2f - avatarContainer.getScaleX()) / avatarContainer.getScaleX()/2 );
+                        float innerPaddingAroundAvatar = 40;
+                        centerRect.top = avatarContainer.getTranslationY()- innerPaddingAroundAvatar + scale;
+                        centerRect.left = avatarContainer.getLeft() - innerPaddingAroundAvatar + scale;
+                        centerRect.right = avatarContainer.getRight() + innerPaddingAroundAvatar - scale;
+                        centerRect.bottom = avatarContainer.getTranslationY() + avatarContainer.getMeasuredHeight()+ innerPaddingAroundAvatar - scale;
+                    }
+
                     if (read < 1) {
                         unreadPaint = gradientTools.getPaint(rect2);
                         unreadPaint.setAlpha((int) (0xFF * (1f - read) * segmentsAlpha));
                         unreadPaint.setStrokeWidth(dpf2(2.33f));
-                        drawArc(canvas, rect2, a, -widthAngle * appear, false, unreadPaint);
+                        drawArc(canvas, centerRect, a, -widthAngle * appear, false, unreadPaint);
                     }
 
                     if (read > 0) {
                         readPaint.setAlpha((int) (readPaintAlpha * read * segmentsAlpha));
                         readPaint.setStrokeWidth(dpf2(1.5f));
-                        drawArc(canvas, rect3, a, -widthAngle * appear, false, readPaint);
+                        drawArc(canvas, centerRect, a, -widthAngle * appear, false, readPaint);
                     }
 
                     if (bounceScale != 1) {

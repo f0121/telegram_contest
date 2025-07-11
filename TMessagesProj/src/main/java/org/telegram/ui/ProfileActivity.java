@@ -64,6 +64,7 @@ import android.media.MediaCodecList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -2221,6 +2222,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         if (lastFragment instanceof ChatActivity && ((ChatActivity) lastFragment).themeDelegate != null && ((ChatActivity) lastFragment).themeDelegate.getCurrentTheme() != null) {
             resourcesProvider = lastFragment.getResourceProvider();
         }
+
+
         searchTransitionOffset = 0;
         searchTransitionProgress = 1f;
         searchMode = false;
@@ -3248,6 +3251,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         };
 
         if (myProfile) {
+            setAvatarExpandProgress(1f);
+
             bottomButtonsContainer = new FrameLayout(context);
 
             bottomButtonContainer = new FrameLayout[2];
@@ -3913,6 +3918,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     boolean checked = !checkCell.isChecked();
 
                     boolean defaultEnabled = getNotificationsController().isGlobalNotificationsEnabled(did, false, false);
+                    isMuted = checked;
+                    headerQuickActionsContainer.setIsMute(isMuted);
 
                     String key = NotificationsController.getSharedPrefKey(did, topicId);
                     if (checked) {
@@ -4944,6 +4951,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
                 String key = NotificationsController.getSharedPrefKey(did, topicId);
                 if (checked) {
+                    headerQuickActionsContainer.setIsMute(false);
+
                     SharedPreferences preferences = MessagesController.getNotificationsSettings(currentAccount);
                     SharedPreferences.Editor editor = preferences.edit();
                     if (defaultEnabled) {
@@ -4960,6 +4969,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
                     editor.apply();
                 } else {
+                    headerQuickActionsContainer.setIsMute(true);
                     int untilTime = Integer.MAX_VALUE;
                     SharedPreferences preferences = MessagesController.getNotificationsSettings(currentAccount);
                     SharedPreferences.Editor editor = preferences.edit();
@@ -5896,6 +5906,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         updateEmojiStatusDrawableColor(value);
 
         final float k = AndroidUtilities.dpf2(8f);
+
 
         final float nameTextViewXEnd = AndroidUtilities.dpf2(18f) - nameTextView[1].getLeft();
         final float nameTextViewYEnd = newTop + extraHeight - AndroidUtilities.dpf2(38f) - nameTextView[1].getBottom();
@@ -12335,6 +12346,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             } else {
                                 val = enabled ? LocaleController.getString(R.string.NotificationsOn) : LocaleController.getString(R.string.NotificationsOff);
                             }
+                            isMuted = !enabled;
+                            headerQuickActionsContainer.setIsMute(isMuted);
                         }
                         if (val == null) {
                             val = LocaleController.getString(R.string.NotificationsOff);
@@ -14820,7 +14833,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
     public void updateCollectibleHint() {
         if (collectibleHint == null) return;
-        Log.d("fariiiid111", nameTextView[1].getX()+"");
         collectibleHint.setJointPx(0, nameTextView[1].getX() + AndroidUtilities.dp(10));
         final float expanded = AndroidUtilities.lerp(expandAnimatorValues, currentExpanAnimatorFracture);
         collectibleHint.setTranslationY(-collectibleHint.getPaddingBottom() + nameTextView[1].getY() - dp(24) + lerp(dp(6), -dp(12), expanded));
