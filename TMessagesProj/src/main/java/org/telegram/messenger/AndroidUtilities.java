@@ -35,17 +35,21 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -58,6 +62,10 @@ import android.provider.CallLog;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.system.ErrnoException;
 import android.system.OsConstants;
 import android.telephony.TelephonyManager;
@@ -5869,6 +5877,53 @@ public class AndroidUtilities {
         return bitmap;
     }
 
+    public static Bitmap getCircularBitmap(Bitmap bitmap) {
+        if (bitmap == null) return null;
+
+        int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+        Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        final float radius = size / 2f;
+
+        Shader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        paint.setShader(shader);
+
+        canvas.drawCircle(radius, radius, radius, paint);
+
+        return output;
+    }
+
+    public static Drawable getRoundCornerDrawable(int color){
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        drawable.setCornerRadius(30);
+        return drawable;
+    }
+
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float cornerRadius) {
+        if(bitmap == null)
+            return null;
+
+        Bitmap output = Bitmap.createBitmap(
+                bitmap.getWidth(),
+                bitmap.getHeight(),
+                Bitmap.Config.ARGB_8888
+        );
+
+        Canvas canvas = new Canvas(output);
+
+        final Paint paint = new Paint();
+        final RectF rect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        paint.setShader(new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+
+        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint);
+
+        return output;
+    }
     public static List<View> allGlobalViews() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -5941,6 +5996,54 @@ public class AndroidUtilities {
     public static boolean makingGlobalBlurBitmap;
     public static void makeGlobalBlurBitmap(Utilities.Callback<Bitmap> onBitmapDone, float amount) {
         makeGlobalBlurBitmap(onBitmapDone, amount, (int) amount, null, null);
+    }
+
+
+    public static Bitmap padBitmap(Bitmap original, int paddingPx) {
+        Bitmap padded = Bitmap.createBitmap(
+                original.getWidth() + paddingPx * 2,
+                original.getHeight() + paddingPx * 2,
+                Bitmap.Config.ARGB_8888
+        );
+
+        Canvas canvas = new Canvas(padded);
+        canvas.drawBitmap(original, paddingPx, paddingPx, null);
+
+        return padded;
+    }
+
+    public static Bitmap blurBitmap(Context context, Bitmap input, float blurRadius, float downscale) {
+        if (input == null || input.getWidth() == 0 || input.getHeight() == 0) {
+            return null;
+        }
+
+        // Step 1: Downscale
+        int width = Math.round(input.getWidth() / downscale);
+        int height = Math.round(input.getHeight() / downscale);
+
+        Bitmap downscaled = Bitmap.createScaledBitmap(input, width, height, true);
+
+
+        if(blurRadius == 0){
+            return downscaled;
+        }
+
+        // Step 2: Blur the downscaled bitmap
+        Bitmap blurred = Bitmap.createBitmap(downscaled.getWidth(), downscaled.getHeight(), Bitmap.Config.ARGB_8888);
+
+        RenderScript rs = RenderScript.create(context);
+        Allocation inputAlloc = Allocation.createFromBitmap(rs, downscaled);
+        Allocation outputAlloc = Allocation.createFromBitmap(rs, blurred);
+
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        blurScript.setRadius(Math.min(blurRadius, 25f)); // Max allowed is 25
+        blurScript.setInput(inputAlloc);
+        blurScript.forEach(outputAlloc);
+        outputAlloc.copyTo(blurred);
+
+        rs.destroy();
+
+        return blurred;
     }
 
     public static void makeGlobalBlurBitmap(Utilities.Callback<Bitmap> onBitmapDone, float downscale, int amount, View forView, List<View> exclude) {
