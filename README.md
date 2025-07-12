@@ -1,39 +1,67 @@
-## Telegram messenger for Android
+# Telegram Android Contest 2025 - Profile Redesign
 
-[Telegram](https://telegram.org) is a messaging app with a focus on speed and security. It’s superfast, simple and free.
-This repo contains the official source code for [Telegram App for Android](https://play.google.com/store/apps/details?id=org.telegram.messenger).
+This project is a submission for the **Telegram Android Contest 2025 - Round 1**.  
+The goal is to redesign the profile screens of Telegram (users, groups, channels, businesses) following the official mockups provided by the Telegram team.  
+All features, transitions, and layouts strictly follow the contest requirements.
 
-## Creating your Telegram Application
+## Screenshots
+Pre
+![Untitled-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/b47e3387-f0fc-4d80-9c13-44be8f991b3a)
+![Screenshot_20250712_174115_contest farid telegram web](https://github.com/user-attachments/assets/5dd1f5a6-38fb-44bf-aceb-c7b2e615986f)
 
-We welcome all developers to use our API and source code to create applications on our platform.
-There are several things we require from **all developers** for the moment.
+## Contest Compliance
 
-1. [**Obtain your own api_id**](https://core.telegram.org/api/obtaining_api_id) for your application.
-2. Please **do not** use the name Telegram for your app — or make sure your users understand that it is unofficial.
-3. Kindly **do not** use our standard logo (white paper plane in a blue circle) as your app's logo.
-3. Please study our [**security guidelines**](https://core.telegram.org/mtproto/security_guidelines) and take good care of your users' data and privacy.
-4. Please remember to publish **your** code too in order to comply with the licences.
+- Written entirely in Java
+- No third-party UI frameworks used
+- Performance and stability maintained
+- All mockups and transitions implemented accurately
 
-### API, Protocol documentation
 
-Telegram API manuals: https://core.telegram.org/api
+## Tech Stack
 
-MTproto protocol manuals: https://core.telegram.org/mtproto
+- Language: Java
+- Framework: Native Android SDK
+- No third-party UI libraries used (as per contest rules)
 
-### Compilation Guide
+## Project Structure and New Changes
+**Note: ** Google play service for notifications has been disabled to have more time for developing app instead of creating api keys.
 
-**Note**: In order to support [reproducible builds](https://core.telegram.org/reproducible-builds), this repo contains dummy release.keystore,  google-services.json and filled variables inside BuildVars.java. Before publishing your own APKs please make sure to replace all these files with your own.
+- **AndroidUtilities.java** updated with adding some helper functions
+- **NotchDropView.java** addde for profile top notch view
+- **ProfileHeaderQuickActions.java** added for profile quick actions section (it would be better to append View at the end of the file name)
+- **ProfileGiftsView.java** updated for gift icons translations based on scroll
+- **ProfilePatternDrawer.java** added for new pattern drawing in TopView
 
-You will require Android Studio 3.4, Android NDK rev. 20 and Android SDK 8.1
+## Limitations & Future Improvements
 
-1. Download the Telegram source code from https://github.com/DrKLO/Telegram ( git clone https://github.com/DrKLO/Telegram.git )
-2. Copy your release.keystore into TMessagesProj/config
-3. Fill out RELEASE_KEY_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_STORE_PASSWORD in gradle.properties to access your  release.keystore
-4.  Go to https://console.firebase.google.com/, create two android apps with application IDs org.telegram.messenger and org.telegram.messenger.beta, turn on firebase messaging and download google-services.json, which should be copied to the same folder as TMessagesProj.
-5. Open the project in the Studio (note that it should be opened, NOT imported).
-6. Fill out values in TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java – there’s a link for each of the variables showing where and which data to obtain.
-7. You are ready to compile Telegram.
+Due to discovering the contest relatively late, I had only 7 days to work on this project. While I managed to implement the core functionality and UI flow according to the provided mockups, with just one additional week, I would have significantly improved both the structure and performance of the codebase. Some of the key areas I had planned to refine include:
 
-### Localization
+1. **Refactoring `ProfileActivity` (Monster Class)**  
+   This class currently contains a large volume of code and responsibilities, making it difficult to maintain and extend.  
+   My plan was to refactor it using proper **object-oriented design principles** such as:
+   - **Separation of Concerns**
+   - **Single Responsibility Principle**
+   - **Encapsulation**
+   - Applying **Design Patterns** like **MVC/MVP** or **Command/Observer** to decouple business logic from UI rendering.  
+   With this approach, I estimate the code size could be reduced by at least 30%, improving both clarity and testability.
 
-We moved all translations to https://translations.telegram.org/en/android/. Please use it.
+2. **Smoother Animations**  
+   Improving animation smoothness was entirely feasible by optimizing rendering logic and minimizing layout recalculations.  
+   Unfortunately, the original code in these sections lacks structure (e.g., missing design patterns, tightly coupled logic), which made integrating optimized code more difficult within the limited timeframe.
+
+3. **Reducing Redundancy**  
+   The current implementation still has noticeable redundant logic and repetitive patterns. These could be eliminated by creating shared UI components and utility methods, resulting in a cleaner and more maintainable codebase.
+
+4. **Optimizing the Settings Screen**  
+   I didn’t have enough time to fully optimize the Settings screen. Some elements are not yet properly modularized or consistent with the new design flow.
+
+---
+
+### Final Note  
+Despite the time constraint, I aimed to deliver a functional and accurate implementation aligned with the contest guidelines. I would be excited to continue refining the codebase and applying architectural improvements if given more time.
+
+## Author
+
+**Your Full Name**  
+GitHub: [f0121](https://github.com/f0121)  
+Telegram: [@bytegroup_co](https://t.me/bytegroup_co)
